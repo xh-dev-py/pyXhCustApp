@@ -32,7 +32,8 @@ def _get_file_content(home: str, name: str) -> str:
     else:
         return None
 
-def _rm_file(home:str, name:str):
+
+def _rm_file(home: str, name: str):
     os.remove(join(home, name))
 
 
@@ -52,9 +53,11 @@ def _get_kv(home: str, key: str) -> str:
     else:
         return None
 
-def _rm_kv(home:str,key:str):
+
+def _rm_kv(home: str, key: str):
     if _has_file(home, _kv_file_name(key)):
         _rm_file(home, _kv_file_name(key))
+
 
 _PROXY_VAL = "proxy"
 
@@ -64,12 +67,12 @@ class CustApp:
         self.separator = separator()
         self.home = "%s%s.custApp%s%s" % (home, self.separator, self.separator, name)
         if os.path.exists(self.home) and os.path.isfile(self.home):
-            raise Exception("Home %s is not directory!" % (self.home))
+            raise Exception("Home %s is not directory!" % self.home)
         elif not os.path.exists(self.home):
             os.makedirs(self.home)
 
         if not os.path.exists(self.home) or os.path.isfile(self.home):
-            raise Exception("Home %s is not valid!" % (self.home))
+            raise Exception("Home %s is not valid!" % self.home)
 
     def has_proxy(self) -> bool:
         return _has_file(self.home, _PROXY_VAL)
@@ -91,10 +94,10 @@ class CustApp:
     def get_kv(self, key: str):
         return _get_kv(self.home, key)
 
-    def rm_kv(self, key:str):
+    def rm_kv(self, key: str):
         _rm_file(self.home, _kv_file_name(key))
 
-    def has_kv(self, key:str):
+    def has_kv(self, key: str):
         _has_file(self.home, _kv_file_name(key))
 
     @staticmethod

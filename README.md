@@ -5,7 +5,7 @@ A library provide functionality process chia plot log.
 # Installation
 
 ```
-pip install pyChiaLogProcessor
+pip install pyXhCustApp
 ```
 
 # Demo
