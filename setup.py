@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
       name='pyXhCustApp',
-      version='0.0.3',
+      version='0.0.4',
       description='Custom App Environment',
       py_modules=['pyXhCustApp'],
       package_dir={'':'src'},

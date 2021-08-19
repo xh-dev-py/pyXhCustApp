@@ -1,4 +1,4 @@
-# Chia Log Processor
+# PyXHCustApp
 
 A library provide functionality process chia plot log.
 
