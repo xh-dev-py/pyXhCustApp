@@ -4,61 +4,59 @@ import py_xh_custapp_xethhung12 as project
 from j_vault_http_client_xethhung12 import client
 import time
 import sys
+import argparse
 
 def main():
     client.load_to_env()
-    def show_usage():
-        script_str = "python -m pyXhCustApp {name_space}"
-        print("%s list #Show all all" % script_str)
-        print("%s exist {key} #return true if {key} exists " % script_str)
-        print("%s value {key} #return value of {key} or None " % script_str)
-        print("%s set {key} {value} #set {value} to {key} " % script_str)
-        print("%s remove {key} #remove {key} " % script_str)
 
+    parser = argparse.ArgumentParser(
+                    prog='pyXhCustapp',
+                    description='A app help manage local py apps',
+                    # epilog='Text at the bottom of help'
+                    )
+    parser.add_argument("--name", "-n", required=True, type=str, default=None, help="The name of the app")
 
-    if len(sys.argv) == 1:
-        show_usage()
-        exit(1)
+    sub_parsers = parser.add_subparsers(dest="mainCmd")
+    sub_cmd = sub_parsers.add_parser("list", help="listing all the configuration of select app")
 
-    name_space = sys.argv[1]
-    app = project.CustApp.appDefault(name_space)
+    sub_cmd = sub_parsers.add_parser("exists", help="check if key of config exists in app")
+    sub_cmd.add_argument("--key", "-k", required=True, type=str, help="The key of config to be set in the app")
 
-    if len(sys.argv) == 2:
-        show_usage()
-        exit(1)
+    sub_cmd = sub_parsers.add_parser("show", help="show the value of select config key in app")
+    sub_cmd.add_argument("--key", "-k", required=True, type=str, help="The key of config to be set in the app")
 
-    cmd = sys.argv[2]
-    if len(sys.argv) == 3:
-        if cmd == "list":
-            app.list()
-            exit(0)
+    sub_cmd = sub_parsers.add_parser("set", help="set the config key and vaule in app")
+    sub_cmd.add_argument("--key", "-k", required=True, type=str, help="The key of config to be set in the app")
+    sub_cmd.add_argument("--value", "-v", required=True, type=str, help="The value of the  config to be set in app")
 
-    if len(sys.argv) == 3:
-        show_usage()
-        exit(1)
+    sub_cmd = sub_parsers.add_parser("unset", help="unset a config key in app")
+    sub_cmd.add_argument("--key", "-k", required=True, type=str, help="The key of config to be set in the app")
 
-    key = sys.argv[3]
-    if len(sys.argv) == 4:
-        if cmd == "exist":
-            print("Contains key[%s]: %r" % (key, app.has_kv(key)))
-            exit(0)
-        if cmd == "value":
-            print("%s: %s" % (key, app.get_kv(key)))
-            exit(0)
-        if cmd == "remove":
-            if app.has_kv(key):
-                print("Removed %s: %s" % (key, app.rm_kv(key)))
-            else:
-                print("key[%s] not exists" % key)
-            exit(0)
-        show_usage()
-        exit(1)
+    data = parser.parse_args()
 
-    if len(sys.argv) == 5 and cmd == "set":
-        value = sys.argv[4]
+    app = project.CustApp.appDefault(data.name)
+    
+    if data.mainCmd == "list":
+        app.list()
+    elif data.mainCmd == "exists":
+        key=data.key
+        print("Contains key[%s]: %r" % (key, app.has_kv(key)))
+    elif data.mainCmd == "exists":
+        key=data.key
+        print("Contains key[%s]: %r" % (key, app.has_kv(key)))
+    elif data.mainCmd == "show":
+        key=data.key
+        print("%s: %s" % (key, app.get_kv(key)))
+    elif data.mainCmd == "set":
+        key=data.key
+        value=data.value
         app.set_kv(key, value)
         print("set key[%s] as %s" % (key, value))
-        exit(0)
-
-    show_usage()
-    exit(1)
+    elif data.mainCmd == "unset":
+        key=data.key
+        if app.has_kv(key):
+            print("Removed %s: %s" % (key, app.rm_kv(key)))
+        else:
+            print("key[%s] not exists" % key)
+    else:
+        raise Exception(f"No any match cmd args found: {sys.argv}")

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "py-xh-custapp-xethhung12"
-version = "0.0.6"
+version = "0.0.7"
 description = "Custom App Environment"
 readme = "README.md"
 requires-python = ">=3.11"

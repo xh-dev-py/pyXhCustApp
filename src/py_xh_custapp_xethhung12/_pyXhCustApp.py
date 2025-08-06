@@ -66,7 +66,7 @@ _PROXY_VAL = "proxy"
 class CustApp:
     def __init__(self, home: Path, name: str):
         self.separator = separator()
-        self.home = "%s%s.custApp%s%s" % (str(home), self.separator, self.separator, name)
+        self.home = "%s%s.pyXhCustApp%s%s" % (str(home), self.separator, self.separator, name)
         if os.path.exists(self.home) and os.path.isfile(self.home):
             raise Exception("Home %s is not directory!" % self.home)
         elif not os.path.exists(self.home):
