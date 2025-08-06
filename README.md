@@ -5,11 +5,7 @@ A library provide functionality process chia plot log.
 # Installation
 
 ```python_script
-pip install pyXhCustApp
-```
-
-```python_script
-pip3 install pyXhCustApp
+pip install py-xh-custapp-xethhung12
 ```
 
 # Demo
