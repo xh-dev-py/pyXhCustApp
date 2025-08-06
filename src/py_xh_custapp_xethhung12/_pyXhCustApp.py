@@ -104,7 +104,7 @@ class CustApp:
 
     def __init__(self, home: Path, name: str):
         self.separator = Platform.separator()
-        self.home = "%s%s.pyXhCustApp%s%s" % (str(home), self.separator, self.separator, name)
+        self.home = join(str(home), ".pyXhCustApp", name)
         if os.path.exists(self.home) and os.path.isfile(self.home):
             raise Exception("Home %s is not directory!" % self.home)
         elif not os.path.exists(self.home):
@@ -112,6 +112,18 @@ class CustApp:
 
         if not os.path.exists(self.home) or os.path.isfile(self.home):
             raise Exception("Home %s is not valid!" % self.home)
+        
+        if Platform.is_win():
+            import ctypes
+            FILE_ATTRIBUTE_HIDDEN = 0x02
+            try:
+                attrs = ctypes.windll.kernel32.GetFileAttributesW(str(self.home))
+                if attrs == -1:
+                    raise FileNotFoundError(f"Path not found: {path}")
+                return bool(attrs & FILE_ATTRIBUTE_HIDDEN)
+            except Exception as e:
+                print(f"Error: {e}")
+                return False
 
         if os.path.exists(self._get_credential_file()) and not os.path.isfile(self._get_credential_file()):
             raise Exception("Credential file path contains non file structure")
@@ -122,12 +134,10 @@ class CustApp:
         elif Path(self._get_credential_file()).stat().st_size == 0:
             with open(self._get_credential_file(), "w") as f:
                 f.write(self._get_cc_hash_str())
-            
-            
-
         
         if not os.path.exists(self._get_credential_file()):
             raise Exception("Missing the credential file")
+        
 
     def has_proxy(self) -> bool:
         return _has_file(self.home, _PROXY_VAL)
