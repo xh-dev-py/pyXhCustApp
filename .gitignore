@@ -3,4 +3,4 @@ dist
 */__pycache__/
 src/*.egg-info/
 .idea
-venv
+.venv

@@ -14,8 +14,8 @@ pip3 install pyXhCustApp
 
 # Demo
 
-```python_script
-from pyXhCustApp import CustApp
+```python
+from py_xh_custapp_xethhung12 import CustApp
 CustApp.appDefault("abc_app")
 print(app.has_proxy())
 app.set_kv('xxx', "xxx")
@@ -27,9 +27,10 @@ print(app.home)
 ```
 
 ```shell script
-python -m pyXhCustApp {name_space} list #Show all all
-python -m pyXhCustApp {name_space} exist {key} #return true if {key} exists
-python -m pyXhCustApp {name_space} value {key} #return value of {key} or None
-python -m pyXhCustApp {name_space} set {key} {value} #set {value} to {key}
-python -m pyXhCustApp {name_space} remove {key} #remove {key}
+# `python -m py_xh_custapp_xethhung12` can be replace by `pyXhCustapp` as short cut script
+python -m py_xh_custapp_xethhung12 {name_space} list #Show all all
+python -m py_xh_custapp_xethhung12 {name_space} exist {key} #return true if {key} exists
+python -m py_xh_custapp_xethhung12 {name_space} value {key} #return value of {key} or None
+python -m py_xh_custapp_xethhung12 {name_space} set {key} {value} #set {value} to {key}
+python -m py_xh_custapp_xethhung12 {name_space} remove {key} #remove {key}
 ```
