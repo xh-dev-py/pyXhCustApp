@@ -2,9 +2,11 @@ import os
 os.environ["using-j-vault-rest-server"]="localhost,7910,false,harden"
 import py_xh_custapp_xethhung12 as project
 from j_vault_http_client_xethhung12 import client
-import time
 import sys
 import argparse
+
+
+
 
 def main():
     client.load_to_env()
