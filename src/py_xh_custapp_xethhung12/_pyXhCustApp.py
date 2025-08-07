@@ -275,10 +275,10 @@ class CustApp:
     def has_kv(self, entry: Entry) -> Optional[bool]:
         return True if entry.of_key() in self._keys() else False
 
-    def list(self, no_profile: bool = False, profile:str = None)->str:
+    def list(self, profile:Profile, no_profile: bool = False):
         if no_profile:
             return list(self._keys(no_profile=True))
-        elif profile is not None:
+        elif not profile.is_empty():
             return list(self._keys(profile=profile))
         else:
             return list(self._keys())
@@ -293,7 +293,7 @@ class CustApp:
     def _key_tag_name(self, key: str)->str:
         return join(self.home, f"{key}.kv.tag")
 
-    def _keys(self, no_profile:bool=False, profile: str=None):
+    def _keys(self, profile: Profile, no_profile:bool=False):
         for filename in os.listdir(self.home):
             if filename.endswith('.kv'):
                 entry_str=filename[0:-3]
@@ -302,8 +302,8 @@ class CustApp:
                         continue
                     else:
                         yield entry_str
-                elif profile is not None:
-                    if entry_str.startswith(profile):
+                elif not profile.is_empty():
+                    if entry_str.startswith(profile.as_prefix()):
                         yield entry_str
                     else:
                         continue

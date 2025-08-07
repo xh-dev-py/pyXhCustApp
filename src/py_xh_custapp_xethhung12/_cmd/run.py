@@ -62,7 +62,7 @@ def main():
         profile = project.Profile(data.profile)
         app = project.CustApp.appDefault(data.name)
         if data.mainCmd == "list":
-            files = app.list(no_profile=data.no_profile, profile= None if profile.is_empty() else profile.as_prefix())
+            files = app.list(profile= profile, no_profile=data.no_profile)
             var_num = len(files)
             print("Number of variable: %s" % var_num)
             for file in files:
