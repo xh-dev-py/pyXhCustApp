@@ -295,7 +295,9 @@ class CustApp:
     def _key_tag_name(self, key: str)->str:
         return join(self.home, f"{key}.kv.tag")
 
-    def _keys(self, profile: Profile, no_profile:bool=False):
+    def _keys(self, profile: Profile=None, no_profile:bool=False):
+        if profile is None:
+            profile = Profile.emptyProfile()
         for filename in os.listdir(self.home):
             if filename.endswith('.kv'):
                 entry_str=filename[0:-3]
