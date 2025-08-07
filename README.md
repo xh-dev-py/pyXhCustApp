@@ -11,22 +11,41 @@ pip install py-xh-custapp-xethhung12
 # Demo
 
 ```python
-from py_xh_custapp_xethhung12 import CustApp
+from py_xh_custapp_xethhung12 import CustApp, Entry, Profile, Platform
+
+# create app
 CustApp.appDefault("abc_app")
+
+# check if proxy is set for the app
 print(app.has_proxy())
-app.set_kv('xxx', "xxx")
-app.set_kv('xxx', "yyy")
-print(app.get_kv('xxx'))
-app.rm_kv('xxx')
-print(app.has_kv('xxx'))
+
+# set a entry of key `xxx` with vaule `yyy`
+app.set_kv(Entry.simple('xxx'), "yyy")
+
+# get the value of configuration entry
+print(app.get_kv(Entry.simple('xxx')))
+
+# remove the configuration entry
+app.rm_kv(Entry.simple('xxx'))
+
+# check if configuration entry exists
+print(app.has_kv(Entry.simple('xxx')))
+
+# create a entry with profile (some kind grouping of configuration)
+entry = Entry.with_profile("key", "profile_name")
+
+# print the app home directory
 print(app.home)
 ```
 
 ```shell script
 # `python -m py_xh_custapp_xethhung12` can be replace by `pyXhCustapp` as short cut script
-python -m py_xh_custapp_xethhung12 {name_space} list #Show all all
-python -m py_xh_custapp_xethhung12 {name_space} exist {key} #return true if {key} exists
-python -m py_xh_custapp_xethhung12 {name_space} value {key} #return value of {key} or None
-python -m py_xh_custapp_xethhung12 {name_space} set {key} {value} #set {value} to {key}
-python -m py_xh_custapp_xethhung12 {name_space} remove {key} #remove {key}
+
+pyXhCustapp apps #Show all apps found in the directory
+
+pyXhCustapp app --name {app name} list #Show all all
+pyXhCustapp app --name {app name} exist {key} #return true if {key} exists
+pyXhCustapp app --name {app name} value {key} #return value of {key} or None
+pyXhCustapp app --name {app name} set {key} {value} #set {value} to {key}
+pyXhCustapp app --name {app name} remove {key} #remove {key}
 ```

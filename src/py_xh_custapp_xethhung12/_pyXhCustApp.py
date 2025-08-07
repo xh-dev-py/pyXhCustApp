@@ -120,9 +120,15 @@ class Profile:
 
     def is_empty(self)->bool:
         return getattr(self, '_is_singleton', False)
+    
+    @staticmethod
+    def emptyProfile() -> 'Profile':
+        if Profile._emtpy is None:
+            return Profile(None)
+        else:
+            return Profile._emtpy
 
-Profile(None)
-
+Profile.emptyProfile()
     
 class Entry:
     def __init__(self, key: str, profile: Profile):
@@ -148,6 +154,13 @@ class Entry:
         else:
             raise Exception(f"The data passing is not valid entry. [{data}]")
     
+    def simple(key: str) -> 'Entry':
+        return Entry(key, Profile.emptyProfile())
+
+    def with_profile(key: str, profile_name: str)->'Entry':
+        return Entry(key, Profile(profile_name))
+
+    
 
 
 class CustApp:
@@ -170,7 +183,7 @@ class CustApp:
 
 
     def __init__(self, home: Path, name: str):
-        self.home = join(str(home), ".pyXhCustApp", name)
+        self.home = join(CustApp.defaultAppPath(home), name)
         if os.path.exists(self.home) and os.path.isfile(self.home):
             raise Exception("Home %s is not directory!" % self.home)
         elif not os.path.exists(self.home):
@@ -297,6 +310,10 @@ class CustApp:
                 else:
                     yield entry_str
         
+
+    @staticmethod
+    def defaultAppPath(path: str)->str:
+        return join(path, ".pyXhCustApp")
 
     @staticmethod
     def appDefault(name: str):
