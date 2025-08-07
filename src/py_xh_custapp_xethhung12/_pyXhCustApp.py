@@ -84,14 +84,70 @@ _PROXY_VAL = "proxy"
 
 
 class Profile:
+    _emtpy:'Profile' = None
+    SEP="___"
     def __init__(self, profile: str):
-        self.name = profile
+        if getattr(self, '_is_singleton', False):
+            if getattr(self, '_initialized', False):
+                return 
+            self._initialized = True
+            self.name = ''
+        else:
+            self.name = profile
+    
+    def __new__(cls, profile: str):
+        if profile == "" or profile is None:
+            if cls._emtpy is None:
+                cls._emtpy = super().__new__(cls)
+                cls._emtpy._is_singleton = True
+            return cls._emtpy
+        else:
+            instance = super().__new__(cls)
+            instance._is_singleton = False
+            return instance
     
     def of_key(self, key: str)->str:
         return f"{self.as_prefix()}{key}"
+
+    def as_name(self, key: str)->str:
+        return f"{self.name} - {key}"
     
     def as_prefix(self)->str:
-        return f"{self.name}__"
+        return f"{self.name}{Profile.SEP}"
+
+    def entry_of(key: str) -> 'Entry':
+        return Entry(key, self)
+
+    def is_empty(self)->bool:
+        return getattr(self, '_is_singleton', False)
+
+Profile(None)
+
+    
+class Entry:
+    def __init__(self, key: str, profile: Profile):
+        self.key = key
+        self.profile = profile
+    
+    def name(self):
+        return self.profile.as_name(self.key)
+    
+    def of_key(self):
+        return self.profile.of_key(self.key)
+    
+    def has_profile(self)->bool:
+        return not self.profile.is_empty()
+
+    @staticmethod
+    def laod_from_str(data: str) -> 'Entry':
+        splited = data.split(Profile.SEP)
+        if len(splited) == 1:
+            return Entry(data, None)
+        elif len(splited) == 2:
+            return Entry(splited[1], Profile(splited[0]))
+        else:
+            raise Exception(f"The data passing is not valid entry. [{data}]")
+    
 
 
 class CustApp:
@@ -163,18 +219,18 @@ class CustApp:
         else:
             return True
 
-    def set_kv(self, key: str, value: str):
+    def set_kv(self, key: Entry, value: str):
         self._set_value(key, value)
     
 
     def _get_deen_key(self)->str:
         return _EncryptionTools.b64_format(self._get_default_cred())
 
-    def get_kv(self, key: str) -> Optional[str]:
+    def get_kv(self, key: Entry) -> Optional[str]:
         if self.has_kv(key):
-            data = _get_file_content(self._key_value_name(key))
-            nonce = _get_file_content(self._key_nonce_name(key))
-            tag = _get_file_content(self._key_tag_name(key))
+            data = _get_file_content(self._key_value_name(key.of_key()))
+            nonce = _get_file_content(self._key_nonce_name(key.of_key()))
+            tag = _get_file_content(self._key_tag_name(key.of_key()))
             if data is None or nonce is None or tag is None:
                 raise Exception("The data structure is not completed")
             return _EncryptionTools.decrypt_data(self._get_deen_key(), data, nonce, tag)
@@ -182,37 +238,38 @@ class CustApp:
             return None
         return _get_kv(self.home, key)
     
-    def _set_value(self, key, data: str):
-        with open(self._key_value_name(key), "w") as key_file:
-            with open(self._key_nonce_name(key), "w") as nonce_file:
-                with open(self._key_tag_name(key), "w") as tag_file:
+    def _set_value(self, key:Entry, data: str):
+        with open(self._key_value_name(key.of_key()), "w") as key_file:
+            with open(self._key_nonce_name(key.of_key()), "w") as nonce_file:
+                with open(self._key_tag_name(key.of_key()), "w") as tag_file:
                     ciphertext, nonce, tag = _EncryptionTools.encrypt_data(self._get_default_cred(), data)
                     key_file.write(ciphertext)
                     nonce_file.write(nonce)
                     tag_file.write(tag)
             
 
-    def rm_kv(self, key: str) -> Optional[str]:
+    def rm_kv(self, key: Entry) -> Optional[str]:
         if self.has_kv(key):
             v = self.get_kv(key)
-            os.remove(self._key_value_name(key))
-            os.remove(self._key_nonce_name(key))
-            os.remove(self._key_tag_name(key))
+            os.remove(self._key_value_name(key.of_key()))
+            os.remove(self._key_nonce_name(key.of_key()))
+            os.remove(self._key_tag_name(key.of_key()))
             return v
         else:
             return None
     
 
-    def has_kv(self, key: str) -> Optional[bool]:
-        return True if key in self._keys() else False
+    def has_kv(self, entry: Entry) -> Optional[bool]:
+        return True if entry.of_key() in self._keys() else False
 
-    def list(self, prefix:str = None):
-        files = list(self._keys(prefix=prefix))
-        var_num = len(files)
-        print("Number of variable: %s" % var_num)
-        for file in files:
-            # print("%s: %s" % (file, self.get_kv(file)))
-            print("%s: [hidden]" % (file))
+    def list(self, no_profile: bool = False, profile:str = None)->str:
+        if no_profile:
+            return list(self._keys(no_profile=True))
+        elif profile is not None:
+            return list(self._keys(profile=profile))
+        else:
+            return list(self._keys())
+
     
     def _key_value_name(self, key: str)->str:
         return join(self.home, f"{key}.kv")
@@ -223,16 +280,22 @@ class CustApp:
     def _key_tag_name(self, key: str)->str:
         return join(self.home, f"{key}.kv.tag")
 
-    def _keys(self, prefix: str=None):
+    def _keys(self, no_profile:bool=False, profile: str=None):
         for filename in os.listdir(self.home):
             if filename.endswith('.kv'):
-                if prefix is not None:
-                    if filename.startswith(prefix):
-                        yield filename[0:-3]
+                entry_str=filename[0:-3]
+                if no_profile:
+                    if Entry.laod_from_str(entry_str).has_profile():
+                        continue
+                    else:
+                        yield entry_str
+                elif profile is not None:
+                    if entry_str.startswith(profile):
+                        yield entry_str
                     else:
                         continue
                 else:
-                    yield filename[0:-3]
+                    yield entry_str
         
 
     @staticmethod

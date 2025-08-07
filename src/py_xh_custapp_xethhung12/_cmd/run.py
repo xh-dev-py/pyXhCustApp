@@ -21,6 +21,7 @@ def main():
 
     sub_parsers = parser.add_subparsers(dest="mainCmd")
     sub_cmd = sub_parsers.add_parser("list", help="listing all the configuration of select app")
+    sub_cmd.add_argument("--no-profile", required=False, action='store_true', help="skip profile entry when search")
 
     sub_cmd = sub_parsers.add_parser("exists", help="check if key of config exists in app")
     sub_cmd.add_argument("--key", "-k", required=True, type=str, help="The key of config to be set in the app")
@@ -36,39 +37,40 @@ def main():
     sub_cmd.add_argument("--key", "-k", required=True, type=str, help="The key of config to be set in the app")
 
     data = parser.parse_args()
+    print(data)
 
-    profile = project.Profile(data.profile) if data.profile is not None else None
+    profile = project.Profile(data.profile)
 
     app = project.CustApp.appDefault(data.name)
     
     if data.mainCmd == "list":
-        app.list(prefix= None if profile is None else profile.as_prefix())
+        files = app.list(no_profile=data.no_profile, profile= None if profile.is_empty() else profile.as_prefix())
+        var_num = len(files)
+        print("Number of variable: %s" % var_num)
+        for file in files:
+            # print("%s: %s" % (file, self.get_kv(file)))
+            print("%s: [hidden]" % (file))
     elif data.mainCmd == "exists":
         key=data.key
-        nkey = profile.of_key(key) if profile is not None  else key
-
-        p_str = "" if profile is None else profile.name
-        print(f"[{p_str} - {key}] {'not exists' if app.has_kv(nkey) else 'exists'}")
+        entry=project.Entry(key, profile)
+        print(f"[{entry.name()}] {'not exists' if app.has_kv(entry) else 'exists'}")
     elif data.mainCmd == "show":
         key=data.key
-        nkey = profile.of_key(key) if profile is not None  else key
-        p_str = "" if profile is None else profile.name
-        print(f"[{p_str} - {key}]: {app.get_kv(nkey)}")
+        entry=project.Entry(key, profile)
+        print(f"[{entry.name()}]: {app.get_kv(entry)}")
     elif data.mainCmd == "set":
         key=data.key
         value=data.value
-        nkey = profile.of_key(key) if profile is not None  else key
-        p_str = "" if profile is None else profile.name
-        app.set_kv(nkey, value)
-        print(f"set [{p_str} - {key}] as {value}")
+        entry = project.Entry(key, profile)
+        app.set_kv(entry, value)
+        print(f"set [{entry.name()}] as {value}")
     elif data.mainCmd == "unset":
         key=data.key
-        nkey = profile.of_key(key) if profile is not None  else key
-        p_str = "" if profile is None else profile.name
-        if app.has_kv(nkey):
-            app.rm_kv(nkey)
-            print(f"Removed [{p_str} - {key}]")
+        entry = project.Entry(key, profile)
+        if app.has_kv(entry):
+            app.rm_kv(entry)
+            print(f"Removed [{entry.name()}]")
         else:
-            print(f"key[{p_str} - {key}] not exists")
+            print(f"key[{entry.name()}] not exists")
     else:
         raise Exception(f"No any match cmd args found: {sys.argv}")
