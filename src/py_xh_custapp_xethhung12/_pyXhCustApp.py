@@ -275,7 +275,9 @@ class CustApp:
     def has_kv(self, entry: Entry) -> Optional[bool]:
         return True if entry.of_key() in self._keys() else False
 
-    def list(self, profile:Profile, no_profile: bool = False):
+    def list(self, profile:Profile=None, no_profile: bool = False):
+        if profile is None:
+            profile=Profile.emptyProfile()
         if no_profile:
             return list(self._keys(no_profile=True))
         elif not profile.is_empty():
