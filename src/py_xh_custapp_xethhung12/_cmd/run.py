@@ -16,7 +16,8 @@ def main():
                     description='A app help manage local py apps',
                     # epilog='Text at the bottom of help'
                     )
-    parser.add_argument("--name", "-n", required=True, type=str, default=None, help="The name of the app")
+    parser.add_argument("--name", "-n", required=True, type=str, help="The name of the app")
+    parser.add_argument("--profile", "-p", required=False, default=None, type=str, help="The profile to use")
 
     sub_parsers = parser.add_subparsers(dest="mainCmd")
     sub_cmd = sub_parsers.add_parser("list", help="listing all the configuration of select app")
@@ -36,29 +37,38 @@ def main():
 
     data = parser.parse_args()
 
+    profile = project.Profile(data.profile) if data.profile is not None else None
+
     app = project.CustApp.appDefault(data.name)
     
     if data.mainCmd == "list":
-        app.list()
+        app.list(prefix= None if profile is None else profile.as_prefix())
     elif data.mainCmd == "exists":
         key=data.key
-        print("Contains key[%s]: %r" % (key, app.has_kv(key)))
-    elif data.mainCmd == "exists":
-        key=data.key
-        print("Contains key[%s]: %r" % (key, app.has_kv(key)))
+        nkey = profile.of_key(key) if profile is not None  else key
+
+        p_str = "" if profile is None else profile.name
+        print(f"[{p_str} - {key}] {'not exists' if app.has_kv(nkey) else 'exists'}")
     elif data.mainCmd == "show":
         key=data.key
-        print("%s: %s" % (key, app.get_kv(key)))
+        nkey = profile.of_key(key) if profile is not None  else key
+        p_str = "" if profile is None else profile.name
+        print(f"[{p_str} - {key}]: {app.get_kv(nkey)}")
     elif data.mainCmd == "set":
         key=data.key
         value=data.value
-        app.set_kv(key, value)
-        print("set key[%s] as %s" % (key, value))
+        nkey = profile.of_key(key) if profile is not None  else key
+        p_str = "" if profile is None else profile.name
+        app.set_kv(nkey, value)
+        print(f"set [{p_str} - {key}] as {value}")
     elif data.mainCmd == "unset":
         key=data.key
-        if app.has_kv(key):
-            print("Removed %s: %s" % (key, app.rm_kv(key)))
+        nkey = profile.of_key(key) if profile is not None  else key
+        p_str = "" if profile is None else profile.name
+        if app.has_kv(nkey):
+            app.rm_kv(nkey)
+            print(f"Removed [{p_str} - {key}]")
         else:
-            print("key[%s] not exists" % key)
+            print(f"key[{p_str} - {key}] not exists")
     else:
         raise Exception(f"No any match cmd args found: {sys.argv}")

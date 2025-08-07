@@ -83,6 +83,17 @@ def _get_file_content(path: str) -> Optional[str]:
 _PROXY_VAL = "proxy"
 
 
+class Profile:
+    def __init__(self, profile: str):
+        self.name = profile
+    
+    def of_key(self, key: str)->str:
+        return f"{self.as_prefix()}{key}"
+    
+    def as_prefix(self)->str:
+        return f"{self.name}__"
+
+
 class CustApp:
 
     def _get_credential_file(self)->str:
@@ -103,7 +114,6 @@ class CustApp:
 
 
     def __init__(self, home: Path, name: str):
-        self.separator = Platform.separator()
         self.home = join(str(home), ".pyXhCustApp", name)
         if os.path.exists(self.home) and os.path.isfile(self.home):
             raise Exception("Home %s is not directory!" % self.home)
@@ -196,8 +206,8 @@ class CustApp:
     def has_kv(self, key: str) -> Optional[bool]:
         return True if key in self._keys() else False
 
-    def list(self):
-        files = list(self._keys())
+    def list(self, prefix:str = None):
+        files = list(self._keys(prefix=prefix))
         var_num = len(files)
         print("Number of variable: %s" % var_num)
         for file in files:
@@ -213,10 +223,16 @@ class CustApp:
     def _key_tag_name(self, key: str)->str:
         return join(self.home, f"{key}.kv.tag")
 
-    def _keys(self):
+    def _keys(self, prefix: str=None):
         for filename in os.listdir(self.home):
             if filename.endswith('.kv'):
-                yield filename[0:-3]
+                if prefix is not None:
+                    if filename.startswith(prefix):
+                        yield filename[0:-3]
+                    else:
+                        continue
+                else:
+                    yield filename[0:-3]
         
 
     @staticmethod
