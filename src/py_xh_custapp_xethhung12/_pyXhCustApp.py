@@ -206,6 +206,12 @@ class CustApp:
     def __init__(self, home: Path, name: str):
         self.home = join(CustApp.defaultAppPath(home), name)
 
+        if not os.path.exists(self.home):
+            os.makedirs(self.home)
+        
+        if not os.path.isdir(self.home):
+            raise Exception(f"App root[{self.home}] is not directory")
+
         if os.path.exists(self._get_credential_file()) and not os.path.isfile(self._get_credential_file()):
             raise Exception("Credential file path contains non file structure")
 
