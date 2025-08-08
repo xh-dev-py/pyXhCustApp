@@ -66,6 +66,27 @@ class Platform:
             return '/'
         else:
             raise Exception("Unknown separator")
+    
+def basicSetup(home: str):
+    if not os.path.exists(home):
+        os.makedirs(home)
+
+    if os.path.exists(home) and not os.path.isdir(home):
+        raise Exception(f"Home {home} is not directory!")
+
+    if Platform.is_win():
+        import ctypes
+        FILE_ATTRIBUTE_HIDDEN = 0x02
+        try:
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(self.home))
+            if attrs == -1:
+                raise FileNotFoundError(f"Path not found: {path}")
+            new_attributes = attrs | FILE_ATTRIBUTE_HIDDEN
+            ctypes.windll.kernel32.SetFileAttributesW(path, new_attributes)
+        except Exception as e:
+            print(f"Error: {e}")
+            return False
+
 
 
 def _has_file(home, name: str) -> bool:
@@ -184,25 +205,6 @@ class CustApp:
 
     def __init__(self, home: Path, name: str):
         self.home = join(CustApp.defaultAppPath(home), name)
-        if os.path.exists(self.home) and os.path.isfile(self.home):
-            raise Exception("Home %s is not directory!" % self.home)
-        elif not os.path.exists(self.home):
-            os.makedirs(self.home)
-
-        if not os.path.exists(self.home) or os.path.isfile(self.home):
-            raise Exception("Home %s is not valid!" % self.home)
-        
-        if Platform.is_win():
-            import ctypes
-            FILE_ATTRIBUTE_HIDDEN = 0x02
-            try:
-                attrs = ctypes.windll.kernel32.GetFileAttributesW(str(self.home))
-                if attrs == -1:
-                    raise FileNotFoundError(f"Path not found: {path}")
-                return bool(attrs & FILE_ATTRIBUTE_HIDDEN)
-            except Exception as e:
-                print(f"Error: {e}")
-                return False
 
         if os.path.exists(self._get_credential_file()) and not os.path.isfile(self._get_credential_file()):
             raise Exception("Credential file path contains non file structure")
@@ -317,7 +319,9 @@ class CustApp:
 
     @staticmethod
     def defaultAppPath(path: str)->str:
-        return join(path, ".pyXhCustApp")
+        p= join(path, ".pyXhCustApp")
+        basicSetup(p)
+        return p
 
     @staticmethod
     def appDefault(name: str):
