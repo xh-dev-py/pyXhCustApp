@@ -80,9 +80,9 @@ def basicSetup(home: str):
         try:
             attrs = ctypes.windll.kernel32.GetFileAttributesW(str(home))
             if attrs == -1:
-                raise FileNotFoundError(f"Path not found: {path}")
+                raise FileNotFoundError(f"Path not found: {home}")
             new_attributes = attrs | FILE_ATTRIBUTE_HIDDEN
-            ctypes.windll.kernel32.SetFileAttributesW(path, new_attributes)
+            ctypes.windll.kernel32.SetFileAttributesW(str(home), new_attributes)
         except Exception as e:
             print(f"Error: {e}")
             return False
