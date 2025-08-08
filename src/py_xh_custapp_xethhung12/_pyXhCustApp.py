@@ -78,7 +78,7 @@ def basicSetup(home: str):
         import ctypes
         FILE_ATTRIBUTE_HIDDEN = 0x02
         try:
-            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(self.home))
+            attrs = ctypes.windll.kernel32.GetFileAttributesW(str(home))
             if attrs == -1:
                 raise FileNotFoundError(f"Path not found: {path}")
             new_attributes = attrs | FILE_ATTRIBUTE_HIDDEN
